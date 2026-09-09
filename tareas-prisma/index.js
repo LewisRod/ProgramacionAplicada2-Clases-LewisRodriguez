@@ -1,0 +1,133 @@
+/* //Este es crearlo
+
+import "dotenv/config"
+import express from "express"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { PrismaClient } from "@prisma/client"
+
+
+const app = express()
+
+const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_URL
+})
+
+const prisma = new PrismaClient({ adapter })
+
+app.use(express.json())
+
+app.listen(3000, () => console.log("Servidor en el puerto 3000"));
+
+//Middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
+//Middleware validacion
+const validarDescripcion = (req, res, next) => {
+  if (!req.body.descripcion) {
+    return res
+      .status(400)
+      .json({ error: "La descripcion es un campo requerido" });
+  }
+  next();
+};
+
+
+
+
+app.get("/tareas".async(req, res) => {
+    const tareas = await prisma.tarea.findMany()
+    res.json(tareas)
+}) */
+
+
+
+import "dotenv/config";
+import express from "express";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
+
+const app = express();
+
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const prisma = new PrismaClient({ adapter });
+
+app.use(express.json());
+
+
+// Middleware
+app.use((req, res, next) => {
+    console.log(
+        `[${new Date().toISOString()}] ${req.method} ${req.url}`
+    );
+    
+    next();
+});
+
+// Middleware validación
+const validarDescripcion = ((req, res, next) => {
+    if (!req.body.descripcion) {
+        return res
+        .status(400)
+        .json({ error: "La descripcion es un campo requerido" });
+    }
+    
+    next();
+});
+
+// GET todas las tareas
+app.get("/tareas", async (req, res) => {
+    const tareas = await prisma.tarea.findMany();
+    
+    res.json(tareas);
+});
+
+
+app.post("/tareas", validarDescripcion, async (req, res) => {
+    const { descripcion } = req.body;
+    
+    const tarea = await prisma.tarea.create({
+        data: {
+            descripcion,
+        },
+    });
+    
+    res.status(201).json(tarea);
+});
+
+
+app.put("/tareas/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    
+    const tareaExiste = await prisma.tarea.findUnique({
+        where: { id },
+    });
+    
+    if (!tareaExiste) {
+        return res.status(404).json({
+            error: "Tarea no existe",
+        });
+    }
+    
+    const { descripcion, completada } = req.body;
+    
+    const tarea = await prisma.tarea.update({
+        where: { id },
+        data: {
+            ...(descripcion !== undefined && { descripcion }),
+            ...(completada !== undefined && { completada }),
+        },
+    });
+    
+    res.json(tarea);
+});
+
+
+app.listen(3000, () => {
+  console.log("Servidor en el puerto 3000");
+});
