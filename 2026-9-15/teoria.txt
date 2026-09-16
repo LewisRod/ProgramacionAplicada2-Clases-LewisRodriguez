@@ -1,0 +1,19 @@
+-PROCESO DE UTILIZAR JWT: token es un valor que nos permite acceder a recursos.
+-API_KEY
+-hashing libreria:
+-generacio de secreto: es la clave maesta que desifras todas las demas
+-node -e "console.log(require(`crypto`).randomBytes(64).toString(`hex`))
+
+1-API_KEY middleware
+2-auth middleware y auth controller
+
+
+
+-versiones (postman)
+
+    v1: usa api key 
+
+
+
+JWT_SECRET=node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+API_KEY=node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
